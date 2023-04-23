@@ -1,0 +1,81 @@
+import java.util.*;
+import java.util.stream.Collectors;
+
+class CFG {
+private static Map<String, List<String>> rules;
+private static Map<String, List<String>> semanticRules; // Added semanticRules
+public static void main(String[] args) {
+    rules = new HashMap<>();
+    semanticRules = new HashMap<>(); // Initialized semanticRules
+    initializeGrammarRules();
+    initializeSemanticRules(); // Added initializeSemanticRules()
+    String sentence = generateSentence("S");
+    System.out.println(sentence);
+}
+private static void initializeGrammarRules() {
+        // Basic grammar rules
+
+    rules.put("S", Arrays.asList("NP VP"));
+    rules.put("NP", Arrays.asList("Det N", "Det AP N"));
+    rules.put("AP", Arrays.asList("Adj", "Adj AP"));
+    rules.put("VP", Arrays.asList("V NP", "V NP PP"));
+    rules.put("PP", Arrays.asList("P NP"));
+    rules.put("Det", Arrays.asList("the", "a", "an"));
+    // Semantic rules for nouns
+
+    rules.put("N", Arrays.asList("Animal", "Object"));
+    rules.put("Animal", Arrays.asList("Lion", "Monster"));
+    rules.put("Object", Arrays.asList("book", "tree"));
+    // Semantic rules for adjectives
+
+    rules.put("Adj", Arrays.asList("Size", "Color"));
+    rules.put("Size", Arrays.asList("big", "small"));
+    rules.put("Color", Arrays.asList("brown", "green"));
+    // Semantic rules for verbs
+
+    rules.put("V", Arrays.asList("AnimalAction", "ObjectAction"));
+    rules.put("AnimalAction", Arrays.asList("chased", "ate"));
+    rules.put("ObjectAction", Arrays.asList("read", "climbed"));
+    // Semantic rules for prepositions
+
+    rules.put("P", Arrays.asList("in", "on", "under", "above"));
+}
+
+private static void initializeSemanticRules() { // Added initializeSemanticRules()
+    semanticRules.put("Animal", Arrays.asList(" small mammal", " domesticated pet"));
+    semanticRules.put("Object", Arrays.asList(" literary work", "natural living structure"));
+
+    semanticRules.put("Size", Arrays.asList("large", "tiny"));
+    semanticRules.put("Color", Arrays.asList("red", "blue"));
+
+    semanticRules.put("AnimalAction", Arrays.asList("ran after", "consumed"));
+    semanticRules.put("ObjectAction", Arrays.asList("read  from", "scaled"));
+
+    semanticRules.put("in", Arrays.asList("NewYork", "within"));
+    semanticRules.put("on", Arrays.asList("down below", "Inside the house"));
+    semanticRules.put("under", Arrays.asList("Straight through", "below"));
+    semanticRules.put("above", Arrays.asList("over", "up in the air"));
+}
+
+private static String generateSentence(String symbol) {
+    List<String> alternatives = rules.get(symbol);
+    if (alternatives == null) {
+        return symbol;
+    }
+    String expansion = alternatives.get(new Random().nextInt(alternatives.size()));
+    String[] symbols = expansion.split("\\s+");
+    List<String> words = new ArrayList<>(); // Added words list
+    for (String s : symbols) {
+        String word = generateSentence(s);
+        List<String> semanticAlternatives = semanticRules.get(s);
+        if (semanticAlternatives != null) {
+            word = semanticAlternatives.get(new Random().nextInt(semanticAlternatives.size()));
+        }
+        words.add(word);
+    }
+
+    String sentence = words.stream().collect(Collectors.joining(" "));// Join the symbols into a sentence
+    // Apply basic capitalization and punctuation rules.
+    return sentence.substring(0, 1).toUpperCase() + sentence.substring(1) + " ";
+}
+}
